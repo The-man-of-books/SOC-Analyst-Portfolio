@@ -16,7 +16,7 @@ Welcome to my cybersecurity portfolio. I’m Makhosi Andile Surge, an aspiring S
 
 ##  Live Projects
 
-###  [SOC Analyst Tracker](https://the-man-of-books.github.io/SOC-Analyst-Portfolio/soc-dashboard.html)
+###  [SOC Analyst Tracker](https://socanalystfolio.netlify.app/soc-dashboard)
 A weekly goal tracker that stores your progress locally in the browser. Features:
 - Task-by-task tracking for 4 weeks
 - Custom confirmation modals
