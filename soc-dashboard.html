@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOC Analyst Progress Dashboard</title>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: #f4f4f4;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 40px;
+    }
+    h1 {
+      color: #00ff9f;
+      font-size: 2rem;
+    }
+    .section {
+      margin-top: 40px;
+    }
+    .section h2 {
+      color: #00cfff;
+      font-size: 1.5rem;
+    }
+    .progress-container {
+      margin: 15px 0;
+    }
+    .label {
+      margin-bottom: 5px;
+    }
+    .progress-bar {
+      background: #1a1a1a;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .progress {
+      height: 20px;
+      background: #00ff9f;
+      width: 0%;
+      text-align: center;
+      line-height: 20px;
+      color: #000;
+      transition: width 0.5s ease-in-out;
+    }
+    .tasks {
+      margin-top: 10px;
+    }
+    .tasks label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+    .reset-btn {
+      margin-top: 30px;
+      background: #ff3c3c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .reset-btn:hover {
+      background: #e62e2e;
+    }
+  </style>
+</head>
+<body>
+
+  <h1> SOC Analyst Progress Dashboard</h1>
+  <p>Track your weekly goals with dynamic progress bars. Updates are saved in your browser.</p>
+  <button class="reset-btn" onclick="resetProgress()"> Reset All Progress</button>
+
+  <!-- Week Template -->
+  <script>
+    const weeks = [
+      {
+        id: "week1",
+        title: " Week 1 – Foundations",
+        tasks: [
+          "Create Hack The Box account",
+          "Create Microsoft Learn account",
+          "Complete HTB Labs: OOPSIE, Bashed, Vaccine, Lame",
+          "Play OverTheWire Bandit levels 0–10",
+          "Read: SOC Analyst 101 blog"
+        ]
+      },
+      {
+        id: "week2",
+        title: " Week 2 – Logs & Packets",
+        tasks: [
+          "Install Wireshark & analyze 2 PCAPs",
+          "Complete SC-200 Module 1 & 2 (Microsoft Learn)",
+          "Try HTB Academy: Active Directory Basics",
+          "Explore Security Onion (optional)"
+        ]
+      },
+      {
+        id: "week3",
+        title: " Week 3 – SIEM & Detection",
+        tasks: [
+          "Register for Splunk Fundamentals 1",
+          "Complete SC-200 Module 3",
+          "Map logs to MITRE ATT&CK",
+          "Analyze logs from HTB boxes"
+        ]
+      },
+      {
+        id: "week4",
+        title: " Week 4 – Portfolio",
+        tasks: [
+          "Write 1 SOC incident report",
+          "Add PDF certificates to portfolio",
+          "Create badge grid in \"Certifications\" section",
+          "Deploy portfolio to GitHub Pages or Netlify",
+          "Upload project screenshots and write-ups"
+        ]
+      }
+    ];
+
+    function createSection(week) {
+      const saved = JSON.parse(localStorage.getItem(week.id) || "{}");
+      const total = week.tasks.length;
+      let checkedCount = 0;
+      const section = document.createElement('div');
+      section.className = 'section';
+
+      const header = document.createElement('h2');
+      header.textContent = week.title;
+      section.appendChild(header);
+
+      const progressContainer = document.createElement('div');
+      progressContainer.className = 'progress-container';
+      progressContainer.innerHTML = `
+        <div class="label">Progress</div>
+        <div class="progress-bar"><div class="progress" id="${week.id}-bar">0%</div></div>
+      `;
+      section.appendChild(progressContainer);
+
+      const taskList = document.createElement('div');
+      taskList.className = 'tasks';
+
+      week.tasks.forEach((task, index) => {
+        const taskId = `${week.id}-task${index}`;
+        const checked = saved[taskId] ? 'checked' : '';
+        if (checked) checkedCount++;
+        taskList.innerHTML += `
+          <label><input type="checkbox" data-week="${week.id}" data-task="${taskId}" ${checked}> ${task}</label>
+        `;
+      });
+
+      section.appendChild(taskList);
+      document.body.appendChild(section);
+
+      updateBar(week.id, checkedCount, total);
+    }
+
+    function updateBar(weekId, completed, total) {
+      const percent = Math.round((completed / total) * 100);
+      const bar = document.getElementById(`${weekId}-bar`);
+      if (bar) {
+        bar.style.width = percent + '%';
+        bar.textContent = percent + '%';
+      }
+    }
+
+    function handleCheckboxChange(e) {
+      const input = e.target;
+      const weekId = input.dataset.week;
+      const taskId = input.dataset.task;
+      const saved = JSON.parse(localStorage.getItem(weekId) || "{}");
+      saved[taskId] = input.checked;
+      localStorage.setItem(weekId, JSON.stringify(saved));
+
+      const week = weeks.find(w => w.id === weekId);
+      const allInputs = document.querySelectorAll(`input[data-week='${weekId}']`);
+      const completed = Array.from(allInputs).filter(i => i.checked).length;
+      updateBar(weekId, completed, week.tasks.length);
+    }
+
+    function resetProgress() {
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100%';
+      modal.style.height = '100%';
+      modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+      modal.style.display = 'flex';
+      modal.style.justifyContent = 'center';
+      modal.style.alignItems = 'center';
+      modal.style.zIndex = '1000';
+
+      const box = document.createElement('div');
+      box.style.backgroundColor = '#1e1e1e';
+      box.style.padding = '30px';
+      box.style.borderRadius = '10px';
+      box.style.textAlign = 'center';
+      box.style.color = '#f4f4f4';
+
+      const message = document.createElement('p');
+      message.textContent = '⚠️ This will clear all your progress. Are you 100% sure?';
+      message.style.marginBottom = '20px';
+      box.appendChild(message);
+
+      const yesBtn = document.createElement('button');
+      yesBtn.textContent = 'Yes, Reset';
+      yesBtn.style.backgroundColor = '#ff3c3c';
+      yesBtn.style.border = 'none';
+      yesBtn.style.padding = '10px 20px';
+      yesBtn.style.color = '#fff';
+      yesBtn.style.marginRight = '10px';
+      yesBtn.style.cursor = 'pointer';
+      yesBtn.onclick = () => {
+        weeks.forEach(week => {
+          localStorage.removeItem(week.id);
+        });
+        document.body.removeChild(modal);
+        location.reload();
+      };
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style.backgroundColor = '#444';
+      cancelBtn.style.border = 'none';
+      cancelBtn.style.padding = '10px 20px';
+      cancelBtn.style.color = '#fff';
+      cancelBtn.style.cursor = 'pointer';
+      cancelBtn.onclick = () => document.body.removeChild(modal);
+
+      box.appendChild(yesBtn);
+      box.appendChild(cancelBtn);
+      modal.appendChild(box);
+      document.body.appendChild(modal);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      weeks.forEach(createSection);
+      document.body.addEventListener('change', handleCheckboxChange);
+    });
+  </script>
+</body>
+</html>
